@@ -2,7 +2,6 @@ export { Button } from './Button';
 export { Input } from './Input';
 export { Textarea } from './Textarea';
 export { default as Toast } from './Toast';
-export { HelpButton, TutorialOverlay } from './Tutorial';
 export { default as ThemeSelector } from './ThemeSelector';
 export { HoverCard, HoverCardTrigger, HoverCardContent, HoverCardPortal } from './HoverCard';
 export { Switch } from './Switch';

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useNavigate } from 'react-router-dom';
-import { TutorialOverlay } from '~/components/ui';
-import { swarmTutorialSteps } from '~/components/ui/Tutorial/config';
 import SwarmCreate from '~/components/Swarm/SwarmCreate';
 import SwarmMonitor from '~/components/Swarm/SwarmMonitor';
 import { Button } from '~/components/ui';
@@ -68,34 +66,11 @@ export default function SwarmPanel() {
     setSelectedSwarm(swarmId);
   };
 
-  const [showTutorial, setShowTutorial] = useState(false);
-
-  useEffect(() => {
-    // Show swarm tutorial when component mounts
-    setShowTutorial(true);
-  }, []);
-
-  const handleTutorialComplete = () => {
-    setShowTutorial(false);
-  };
-
-  const handleTutorialSkip = () => {
-    setShowTutorial(false);
-  };
-
   return (
     <div className="flex h-full flex-col">
-      {showTutorial && (
-        <TutorialOverlay
-          steps={swarmTutorialSteps}
-          onComplete={handleTutorialComplete}
-          onSkip={handleTutorialSkip}
-        />
-      )}
       <div className="flex items-center justify-between border-b border-gray-100 p-4 dark:border-gray-800">
         <h2 className="text-lg font-semibold">AI Agent Swarms</h2>
         <Button
-          data-tutorial="swarm-create"
           onClick={handleCreateSwarm}
           className="bg-blue-500 hover:bg-blue-600 text-white"
         >
@@ -112,9 +87,7 @@ export default function SwarmPanel() {
             onBack={() => setSelectedSwarm(null)}
           />
         ) : (
-          <div
-            data-tutorial="swarm-monitor"
-            className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
           >
             {swarms.map((swarm) => (
               <div
@@ -126,9 +99,7 @@ export default function SwarmPanel() {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                   {swarm.description}
                 </p>
-                <div
-                  data-tutorial="swarm-output"
-                  className="flex justify-between items-center"
+                <div className="flex justify-between items-center"
                 >
                   <span className="text-sm">
                     Phase: {swarm.project.currentPhase}

@@ -8,7 +8,6 @@ import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-qu
 import { ScreenshotProvider, ThemeProvider, useApiErrorBoundary } from './hooks';
 import { ToastProvider } from './Providers';
 import Toast from './components/ui/Toast';
-import { TutorialOverlay, HelpButton } from './components/ui/Tutorial';
 import { LiveAnnouncer } from '~/a11y';
 import { router } from './routes';
 
@@ -33,7 +32,6 @@ const App = () => {
             <RadixToast.Provider>
               <ToastProvider>
                 <DndProvider backend={HTML5Backend}>
-                  <TutorialOverlay />
                   <RouterProvider router={router} />
                   <ReactQueryDevtools initialIsOpen={false} position="top-right" />
                   <Toast />
