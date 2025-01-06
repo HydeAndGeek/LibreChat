@@ -11,4 +11,4 @@ restartPolicyMaxRetries = 10
 
 [service]
 name = "LibreChat"
-internal_port = 3080
+internal_port = 3090
