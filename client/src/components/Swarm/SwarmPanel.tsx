@@ -7,6 +7,7 @@ import SwarmCreate from '~/components/Swarm/SwarmCreate';
 import SwarmMonitor from '~/components/Swarm/SwarmMonitor';
 import { Button } from '~/components/ui';
 import { useAuthContext } from '~/hooks/AuthContext';
+import { useLocalStorage } from '~/hooks';
 import store from '~/store';
 
 type TSwarm = {
@@ -69,18 +70,23 @@ export default function SwarmPanel() {
   };
 
   const [showTutorial, setShowTutorial] = useState(false);
+  const [hasSeenTutorial, setHasSeenTutorial] = useLocalStorage('hasSeenSwarmTutorial', false);
 
   useEffect(() => {
-    // Show swarm tutorial when component mounts
-    setShowTutorial(true);
-  }, []);
+    // Show swarm tutorial only if not seen before
+    if (!hasSeenTutorial) {
+      setShowTutorial(true);
+    }
+  }, [hasSeenTutorial]);
 
   const handleTutorialComplete = () => {
     setShowTutorial(false);
+    setHasSeenTutorial(true);
   };
 
   const handleTutorialSkip = () => {
     setShowTutorial(false);
+    setHasSeenTutorial(true);
   };
 
   return (

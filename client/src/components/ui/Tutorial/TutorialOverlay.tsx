@@ -43,7 +43,7 @@ export default function TutorialOverlay({
   if (!targetRect) return null;
 
   const getOverlayStyle = (): React.CSSProperties => {
-    const style: React.CSSProperties = {
+    return {
       position: 'fixed',
       top: 0,
       left: 0,
@@ -51,23 +51,23 @@ export default function TutorialOverlay({
       bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       zIndex: 9998,
+      pointerEvents: 'auto'
+    };
+  };
+
+  const getHighlightStyle = (): React.CSSProperties => {
+    return {
+      position: 'fixed',
+      top: targetRect.top - 10,
+      left: targetRect.left - 10,
+      width: targetRect.width + 20,
+      height: targetRect.height + 20,
+      border: '2px solid #3B82F6',
+      borderRadius: '8px',
+      backgroundColor: 'transparent',
+      zIndex: 9999,
       pointerEvents: 'none'
     };
-
-    // Create a hole in the overlay around the target element
-    const holeStyle = `
-      radial-gradient(
-        circle at ${targetRect.left + targetRect.width / 2}px ${
-          targetRect.top + targetRect.height / 2
-        }px,
-        transparent ${Math.max(targetRect.width, targetRect.height) / 2 + 10}px,
-        rgba(0, 0, 0, 0.5) ${Math.max(targetRect.width, targetRect.height) / 2 + 11}px
-      )
-    `;
-
-    style.background = holeStyle;
-
-    return style;
   };
 
   const getTooltipStyle = (): React.CSSProperties => {
@@ -118,7 +118,8 @@ export default function TutorialOverlay({
 
   return (
     <>
-      <div style={getOverlayStyle()} />
+      <div style={getOverlayStyle()} onClick={handleSkip} />
+      <div style={getHighlightStyle()} />
       <div
         className="dark:bg-gray-800 dark:text-white"
         style={getTooltipStyle()}
