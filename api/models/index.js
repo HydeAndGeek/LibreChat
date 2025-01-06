@@ -41,6 +41,17 @@ const { createToken, findToken, updateToken, deleteTokens } = require('./Token')
 const Balance = require('./Balance');
 const User = require('./User');
 const Key = require('./Key');
+const {
+  Pet,
+  Shelter,
+  Adopter,
+  ServiceProvider,
+  Booking,
+  initializePetAdoption,
+  generatePetEmbeddings,
+  findMatchingPets,
+  findAvailableProviders
+} = require('./pet-adoption');
 
 module.exports = {
   comparePassword,
@@ -94,4 +105,15 @@ module.exports = {
   User,
   Key,
   Balance,
+
+  // Pet Adoption System
+  Pet,
+  Shelter,
+  Adopter,
+  ServiceProvider,
+  Booking,
+  initializePetAdoption,
+  generatePetEmbeddings,
+  findMatchingPets,
+  findAvailableProviders
 };
