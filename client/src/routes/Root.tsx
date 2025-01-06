@@ -9,8 +9,6 @@ import { useAuthContext, useAssistantsMap, useAgentsMap, useFileMap, useSearch }
 import { Nav, MobileNav } from '~/components/Nav';
 import TermsAndConditionsModal from '~/components/ui/TermsAndConditionsModal';
 import { Banner } from '~/components/Banners';
-import { HelpButton } from '~/components/ui/Tutorial';
-
 export default function Root() {
   const { isAuthenticated, logout } = useAuthContext();
   const navigate = useNavigate();
@@ -63,7 +61,6 @@ export default function Root() {
                 <div className="relative flex h-full max-w-full flex-1 flex-col overflow-hidden">
                   <MobileNav setNavVisible={setNavVisible} />
                   <Outlet context={{ navVisible, setNavVisible } satisfies ContextType} />
-                  <HelpButton />
                 </div>
               </div>
             </div>

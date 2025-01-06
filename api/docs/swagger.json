@@ -1,0 +1,381 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "OK-Dog API",
+    "description": "API documentation for the OK-Dog pet training and service management platform",
+    "version": "1.0.0",
+    "contact": {
+      "name": "OK-Dog Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3090/api",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Clients",
+      "description": "Client management operations"
+    },
+    {
+      "name": "Services",
+      "description": "Service management operations"
+    },
+    {
+      "name": "Appointments",
+      "description": "Appointment scheduling operations"
+    },
+    {
+      "name": "Sessions",
+      "description": "Training session operations"
+    }
+  ],
+  "paths": {
+    "/clients": {
+      "$ref": "./paths/clients.json#/~1clients"
+    },
+    "/clients/{id}": {
+      "$ref": "./paths/clients.json#/~1clients~1{id}"
+    },
+    "/clients/{id}/pets": {
+      "$ref": "./paths/clients.json#/~1clients~1{id}~1pets"
+    },
+    "/services": {
+      "$ref": "./paths/services.json#/~1services"
+    },
+    "/services/{id}": {
+      "$ref": "./paths/services.json#/~1services~1{id}"
+    },
+    "/services/{id}/availability": {
+      "$ref": "./paths/services.json#/~1services~1{id}~1availability"
+    },
+    "/appointments": {
+      "$ref": "./paths/appointments.json#/~1appointments"
+    },
+    "/appointments/{id}": {
+      "$ref": "./paths/appointments.json#/~1appointments~1{id}"
+    },
+    "/appointments/{id}/status": {
+      "$ref": "./paths/appointments.json#/~1appointments~1{id}~1status"
+    },
+    "/appointments/calendar": {
+      "$ref": "./paths/appointments.json#/~1appointments~1calendar"
+    },
+    "/appointments/availability": {
+      "$ref": "./paths/appointments.json#/~1appointments~1availability"
+    },
+    "/sessions/start/{appointmentId}": {
+      "$ref": "./paths/sessions.json#/~1sessions~1start~1{appointmentId}"
+    },
+    "/sessions/{id}/end": {
+      "$ref": "./paths/sessions.json#/~1sessions~1{id}~1end"
+    },
+    "/sessions/{id}/activities": {
+      "$ref": "./paths/sessions.json#/~1sessions~1{id}~1activities"
+    },
+    "/sessions/{id}/observations": {
+      "$ref": "./paths/sessions.json#/~1sessions~1{id}~1observations"
+    },
+    "/sessions/{id}/recap": {
+      "$ref": "./paths/sessions.json#/~1sessions~1{id}~1recap"
+    },
+    "/sessions/stats/{clientId}/{petId}": {
+      "$ref": "./paths/sessions.json#/~1sessions~1stats~1{clientId}~1{petId}"
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "error"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Success": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "meta": {
+            "type": "object"
+          }
+        }
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "number"
+                  },
+                  "itemsPerPage": {
+                    "type": "number"
+                  },
+                  "totalItems": {
+                    "type": "number"
+                  },
+                  "totalPages": {
+                    "type": "number"
+                  },
+                  "hasNextPage": {
+                    "type": "boolean"
+                  },
+                  "hasPrevPage": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Activity": {
+        "type": "object",
+        "required": ["type", "description"],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "notes": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          }
+        }
+      },
+      "Observation": {
+        "type": "object",
+        "required": ["category", "note"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["behavior", "training", "health", "socialization", "other"]
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "required": ["name", "type", "description", "duration", "pricing"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["training", "walking", "sitting", "evaluation", "package"]
+          },
+          "description": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 15
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "daysOfWeek": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                }
+              },
+              "timeSlots": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "startTime": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$"
+                    },
+                    "endTime": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "pricing": {
+            "type": "object",
+            "required": ["basePrice"],
+            "properties": {
+              "basePrice": {
+                "type": "number",
+                "minimum": 0
+              },
+              "additionalPetPrice": {
+                "type": "number",
+                "minimum": 0
+              },
+              "packageDiscounts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "sessions": {
+                      "type": "integer",
+                      "minimum": 2
+                    },
+                    "discountPercent": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "paginationParams": {
+        "in": "query",
+        "name": "pagination",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            },
+            "sort": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Access token is missing or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "status": "error",
+              "message": "Unauthorized"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Invalid request data",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "status": "error",
+              "message": "Validation Error",
+              "details": [
+                {
+                  "field": "email",
+                  "message": "Invalid email format"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "status": "error",
+              "message": "Resource not found"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

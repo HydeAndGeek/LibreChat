@@ -1,0 +1,361 @@
+{
+  "/services": {
+    "post": {
+      "tags": ["Services"],
+      "summary": "Create a new service",
+      "description": "Create a new service offering",
+      "operationId": "createService",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name", "type", "description", "duration", "pricing"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Basic Training Package"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["training", "walking", "sitting", "evaluation", "package"],
+                  "example": "training"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Comprehensive basic training program"
+                },
+                "duration": {
+                  "type": "integer",
+                  "minimum": 15,
+                  "example": 60
+                },
+                "availability": {
+                  "type": "object",
+                  "properties": {
+                    "daysOfWeek": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6
+                      },
+                      "example": [1, 2, 3, 4, 5]
+                    },
+                    "timeSlots": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "startTime": {
+                            "type": "string",
+                            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+                            "example": "09:00"
+                          },
+                          "endTime": {
+                            "type": "string",
+                            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+                            "example": "17:00"
+                          }
+                        }
+                      }
+                    },
+                    "customHours": {
+                      "type": "boolean"
+                    },
+                    "bufferBefore": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "bufferAfter": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "pricing": {
+                  "type": "object",
+                  "required": ["basePrice"],
+                  "properties": {
+                    "basePrice": {
+                      "type": "number",
+                      "minimum": 0,
+                      "example": 75.00
+                    },
+                    "additionalPetPrice": {
+                      "type": "number",
+                      "minimum": 0,
+                      "example": 25.00
+                    },
+                    "packageDiscounts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sessions": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "example": 5
+                          },
+                          "discountPercent": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100,
+                            "example": 15
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "location": {
+                  "type": "object",
+                  "required": ["type"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["client", "provider", "park", "any"],
+                      "example": "client"
+                    },
+                    "travelRadius": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "travelFee": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Service created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Services"],
+      "summary": "Get available services",
+      "description": "Get a list of available services with optional filtering",
+      "operationId": "getServices",
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/paginationParams"
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "enum": ["training", "walking", "sitting", "evaluation", "package"]
+          }
+        },
+        {
+          "name": "minPrice",
+          "in": "query",
+          "schema": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "maxPrice",
+          "in": "query",
+          "schema": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "location",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "enum": ["client", "provider", "park", "any"]
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of services",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaginatedResponse"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/services/{id}": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Service ID"
+      }
+    ],
+    "get": {
+      "tags": ["Services"],
+      "summary": "Get service by ID",
+      "description": "Get detailed information about a specific service",
+      "operationId": "getServiceById",
+      "responses": {
+        "200": {
+          "description": "Service details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Services"],
+      "summary": "Update service",
+      "description": "Update service information",
+      "operationId": "updateService",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Service"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Service updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/services/{id}/availability": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Service ID"
+      }
+    ],
+    "get": {
+      "tags": ["Services"],
+      "summary": "Check service availability",
+      "description": "Check if a service is available at a specific time",
+      "operationId": "checkServiceAvailability",
+      "parameters": [
+        {
+          "name": "date",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "duration",
+          "in": "query",
+          "schema": {
+            "type": "integer",
+            "minimum": 15
+          }
+        },
+        {
+          "name": "location",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "enum": ["client", "provider", "park", "any"]
+          }
+        },
+        {
+          "name": "pets",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "description": "Comma-separated list of pet IDs"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Availability check result",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  }
+}

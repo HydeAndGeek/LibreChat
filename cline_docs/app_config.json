@@ -1,0 +1,118 @@
+{
+  "system": {
+    "environment": "development",
+    "debug": true,
+    "api_version": "1.0.0",
+    "base_url": "${LIBRECHAT_BASE_URL}"
+  },
+  "database": {
+    "main": {
+      "type": "mongodb",
+      "connection_string": "${MONGODB_URI}",
+      "options": {
+        "max_pool_size": 100,
+        "timeout_ms": 5000
+      }
+    },
+    "cache": {
+      "type": "redis",
+      "connection_string": "${REDIS_URI}",
+      "ttl_seconds": 3600
+    }
+  },
+  "services": {
+    "pet_matching_system": {
+      "enabled": true,
+      "matching_threshold": 0.8,
+      "max_suggestions": 5,
+      "cache_duration_hours": 24,
+      "ml_model_path": "./models/pet_matcher_v1"
+    },
+    "affiliate_program": {
+      "enabled": true,
+      "commission_rate": 0.1,
+      "payout_threshold": 50.00,
+      "cookie_duration_days": 30,
+      "allowed_currencies": ["USD", "EUR", "GBP"]
+    },
+    "payment_system": {
+      "provider": "stripe",
+      "api_key_env": "STRIPE_API_KEY",
+      "webhook_secret_env": "STRIPE_WEBHOOK_SECRET",
+      "supported_methods": ["card", "bank_transfer"],
+      "currency": "USD",
+      "test_mode": true
+    },
+    "bad_actor_check": {
+      "enabled": true,
+      "check_frequency": "daily",
+      "threshold_score": 0.7,
+      "cache_duration_hours": 72,
+      "external_api_timeout_ms": 3000
+    },
+    "nextdoor_ocr": {
+      "enabled": true,
+      "scan_interval_minutes": 15,
+      "confidence_threshold": 0.9,
+      "max_image_size_mb": 10,
+      "supported_formats": ["jpg", "png", "pdf"]
+    }
+  },
+  "auth": {
+    "google_oauth": {
+      "enabled": true,
+      "client_id_env": "GOOGLE_CLIENT_ID",
+      "client_secret_env": "GOOGLE_CLIENT_SECRET",
+      "callback_url": "${BASE_URL}/auth/google/callback",
+      "scopes": ["email", "profile"]
+    },
+    "session": {
+      "secret_env": "SESSION_SECRET",
+      "duration_hours": 24,
+      "cookie": {
+        "secure": true,
+        "http_only": true,
+        "same_site": "strict"
+      }
+    }
+  },
+  "integrations": {
+    "website_widget": {
+      "enabled": true,
+      "script_url": "${BASE_URL}/embed.js",
+      "default_height": "500px",
+      "default_width": "100%",
+      "allowed_origins": ["${ALLOWED_ORIGINS}"],
+      "rate_limit": {
+        "max_requests": 100,
+        "window_minutes": 60
+      }
+    }
+  },
+  "plugin": {
+    "name": "pet_adoption",
+    "version": "1.0.0",
+    "commands": {
+      "find_pet": {
+        "enabled": true,
+        "rate_limit": 50
+      },
+      "use_discount": {
+        "enabled": true,
+        "rate_limit": 10
+      },
+      "check_bad_actor": {
+        "enabled": true,
+        "rate_limit": 100
+      },
+      "scan_lost_pet": {
+        "enabled": true,
+        "rate_limit": 30
+      }
+    },
+    "error_reporting": {
+      "enabled": true,
+      "level": "warn"
+    }
+  }
+}

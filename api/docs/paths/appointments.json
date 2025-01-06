@@ -1,0 +1,405 @@
+{
+  "/appointments": {
+    "post": {
+      "tags": ["Appointments"],
+      "summary": "Create a new appointment",
+      "description": "Book a new appointment for services",
+      "operationId": "createAppointment",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["service", "pets", "startTime", "location"],
+              "properties": {
+                "service": {
+                  "type": "string",
+                  "description": "Service ID"
+                },
+                "pets": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "Pet ID"
+                  },
+                  "minItems": 1
+                },
+                "startTime": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "location": {
+                  "type": "object",
+                  "required": ["type"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["client", "provider", "park", "other"]
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "street": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "zipCode": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "notes": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "serviceConfig": {
+                  "type": "object",
+                  "properties": {
+                    "customizations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        }
+                      }
+                    },
+                    "specialRequirements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "equipmentNeeded": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Appointment created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Appointments"],
+      "summary": "Get appointments",
+      "description": "Get a list of appointments with filtering",
+      "operationId": "getAppointments",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/paginationParams"
+        },
+        {
+          "name": "startDate",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "endDate",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "enum": ["pending", "confirmed", "cancelled", "completed", "no-show"]
+          }
+        },
+        {
+          "name": "service",
+          "in": "query",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of appointments",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaginatedResponse"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        }
+      }
+    }
+  },
+  "/appointments/{id}": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Appointment ID"
+      }
+    ],
+    "get": {
+      "tags": ["Appointments"],
+      "summary": "Get appointment by ID",
+      "description": "Get detailed information about a specific appointment",
+      "operationId": "getAppointmentById",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Appointment details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/appointments/{id}/status": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Appointment ID"
+      }
+    ],
+    "put": {
+      "tags": ["Appointments"],
+      "summary": "Update appointment status",
+      "description": "Update the status of an appointment",
+      "operationId": "updateAppointmentStatus",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["status"],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["confirmed", "cancelled", "completed", "no-show"]
+                },
+                "paymentMethod": {
+                  "type": "string",
+                  "description": "Required when status is 'confirmed'"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Appointment status updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/appointments/calendar": {
+    "get": {
+      "tags": ["Appointments"],
+      "summary": "Get calendar view",
+      "description": "Get appointments formatted for calendar display",
+      "operationId": "getCalendarView",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "startDate",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "endDate",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Calendar events",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        }
+      }
+    }
+  },
+  "/appointments/availability": {
+    "get": {
+      "tags": ["Appointments"],
+      "summary": "Check availability",
+      "description": "Check availability for a time slot",
+      "operationId": "checkAvailability",
+      "parameters": [
+        {
+          "name": "serviceId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "date",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "duration",
+          "in": "query",
+          "schema": {
+            "type": "integer",
+            "minimum": 15
+          }
+        },
+        {
+          "name": "location",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "enum": ["client", "provider", "park", "any"]
+          }
+        },
+        {
+          "name": "pets",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "description": "Comma-separated list of pet IDs"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Availability check result",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

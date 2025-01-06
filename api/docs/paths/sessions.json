@@ -1,0 +1,380 @@
+{
+  "/sessions/start/{appointmentId}": {
+    "parameters": [
+      {
+        "name": "appointmentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Appointment ID"
+      }
+    ],
+    "post": {
+      "tags": ["Sessions"],
+      "summary": "Start a new session",
+      "description": "Start a new training session from an appointment",
+      "operationId": "startSession",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "201": {
+          "description": "Session started successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/sessions/{id}/end": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Session ID"
+      }
+    ],
+    "put": {
+      "tags": ["Sessions"],
+      "summary": "End a session",
+      "description": "End a session and generate AI-powered recap",
+      "operationId": "endSession",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "activities": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["type", "description"],
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "duration": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "notes": {
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "observations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["category", "note"],
+                    "properties": {
+                      "category": {
+                        "type": "string",
+                        "enum": ["behavior", "training", "health", "socialization", "other"]
+                      },
+                      "note": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "goals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["description", "status"],
+                    "properties": {
+                      "description": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": ["not-started", "in-progress", "achieved", "modified"]
+                      },
+                      "notes": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Session ended successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/sessions/{id}/activities": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Session ID"
+      }
+    ],
+    "post": {
+      "tags": ["Sessions"],
+      "summary": "Add activity",
+      "description": "Add an activity to the session",
+      "operationId": "addActivity",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Activity"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Activity added successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/sessions/{id}/observations": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Session ID"
+      }
+    ],
+    "post": {
+      "tags": ["Sessions"],
+      "summary": "Add observation",
+      "description": "Add a behavioral observation to the session",
+      "operationId": "addObservation",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Observation"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Observation added successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/sessions/{id}/recap": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Session ID"
+      }
+    ],
+    "get": {
+      "tags": ["Sessions"],
+      "summary": "Get session recap",
+      "description": "Get or generate AI-powered session recap",
+      "operationId": "getSessionRecap",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "regenerate",
+          "in": "query",
+          "schema": {
+            "type": "boolean"
+          },
+          "description": "Force regeneration of recap"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Session recap",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/sessions/stats/{clientId}/{petId}": {
+    "parameters": [
+      {
+        "name": "clientId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Client ID"
+      },
+      {
+        "name": "petId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Pet ID"
+      }
+    ],
+    "get": {
+      "tags": ["Sessions"],
+      "summary": "Get session statistics",
+      "description": "Get training statistics for a client's pet",
+      "operationId": "getSessionStats",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Session statistics",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        },
+        "403": {
+          "$ref": "#/components/responses/ForbiddenError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  }
+}

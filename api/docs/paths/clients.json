@@ -1,0 +1,303 @@
+{
+  "/clients": {
+    "post": {
+      "tags": ["Clients"],
+      "summary": "Create a new client",
+      "description": "Create a new client with optional pets",
+      "operationId": "createClient",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name", "email", "phone"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "John Doe"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "example": "john@example.com"
+                },
+                "phone": {
+                  "type": "string",
+                  "example": "+1234567890"
+                },
+                "address": {
+                  "type": "object",
+                  "properties": {
+                    "street": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string"
+                    },
+                    "zipCode": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "pets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["name"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "breed": {
+                        "type": "string"
+                      },
+                      "age": {
+                        "type": "number"
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "medicalInfo": {
+                        "type": "string"
+                      },
+                      "behavioralNotes": {
+                        "type": "string"
+                      },
+                      "trainingGoals": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Client created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Clients"],
+      "summary": "Get all clients",
+      "description": "Get a paginated list of all clients",
+      "operationId": "getClients",
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/paginationParams"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of clients",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaginatedResponse"
+              }
+            }
+          }
+        },
+        "401": {
+          "$ref": "#/components/responses/UnauthorizedError"
+        }
+      }
+    }
+  },
+  "/clients/{id}": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Client ID"
+      }
+    ],
+    "get": {
+      "tags": ["Clients"],
+      "summary": "Get client by ID",
+      "description": "Get detailed information about a specific client",
+      "operationId": "getClientById",
+      "responses": {
+        "200": {
+          "description": "Client details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Clients"],
+      "summary": "Update client",
+      "description": "Update client information",
+      "operationId": "updateClient",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "phone": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "object",
+                  "properties": {
+                    "street": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string"
+                    },
+                    "zipCode": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Client updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  },
+  "/clients/{id}/pets": {
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Client ID"
+      }
+    ],
+    "post": {
+      "tags": ["Clients"],
+      "summary": "Add pet to client",
+      "description": "Add a new pet to an existing client",
+      "operationId": "addPet",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "breed": {
+                  "type": "string"
+                },
+                "age": {
+                  "type": "number"
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "medicalInfo": {
+                  "type": "string"
+                },
+                "behavioralNotes": {
+                  "type": "string"
+                },
+                "trainingGoals": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Pet added successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Success"
+              }
+            }
+          }
+        },
+        "400": {
+          "$ref": "#/components/responses/ValidationError"
+        },
+        "404": {
+          "$ref": "#/components/responses/NotFoundError"
+        }
+      }
+    }
+  }
+}

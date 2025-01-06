@@ -1,0 +1,123 @@
+{
+  "swarm": {
+    "name": "OK-Dog Development Team",
+    "description": "AI agent swarm for developing the OK-Dog platform",
+    "project": {
+      "name": "OK-Dog Platform",
+      "currentPhase": "planning",
+      "analysisType": "project"
+    },
+    "agents": [
+      {
+        "role": "ProductManager",
+        "prompts": [
+          "product-manager-prompts/prompts/framing-the-problem-statement.md",
+          "product-manager-prompts/prompts/user-story-prompt-template.md",
+          "product-manager-prompts/prompts/feature-prioritization.md"
+        ],
+        "responsibilities": [
+          "Define product requirements",
+          "Prioritize features",
+          "Create development roadmap",
+          "Manage project phases"
+        ]
+      },
+      {
+        "role": "Architect",
+        "prompts": [
+          "product-manager-prompts/skeletons/architecture-design.md",
+          "product-manager-prompts/skeletons/system-patterns.md"
+        ],
+        "responsibilities": [
+          "Design system architecture",
+          "Define technical patterns",
+          "Plan infrastructure",
+          "Ensure scalability"
+        ]
+      },
+      {
+        "role": "Engineer",
+        "prompts": [
+          "product-manager-prompts/skeletons/implementation-guide.md",
+          "product-manager-prompts/skeletons/code-standards.md"
+        ],
+        "responsibilities": [
+          "Implement features",
+          "Write clean code",
+          "Follow best practices",
+          "Maintain documentation"
+        ]
+      },
+      {
+        "role": "QAEngineer",
+        "prompts": [
+          "product-manager-prompts/skeletons/test-plan.md",
+          "product-manager-prompts/skeletons/quality-standards.md"
+        ],
+        "responsibilities": [
+          "Create test plans",
+          "Perform testing",
+          "Ensure quality",
+          "Report issues"
+        ]
+      }
+    ],
+    "phases": {
+      "planning": {
+        "description": "Initial project planning and requirement gathering",
+        "deliverables": [
+          "Product requirements document",
+          "Feature prioritization",
+          "Development roadmap",
+          "Resource allocation plan"
+        ]
+      },
+      "design": {
+        "description": "System architecture and technical design",
+        "deliverables": [
+          "Architecture diagram",
+          "Technical specifications",
+          "API design",
+          "Database schema"
+        ]
+      },
+      "implementation": {
+        "description": "Feature development and coding",
+        "deliverables": [
+          "Core functionality",
+          "API endpoints",
+          "Frontend components",
+          "Integration tests"
+        ]
+      },
+      "testing": {
+        "description": "Quality assurance and testing",
+        "deliverables": [
+          "Test plans",
+          "Test cases",
+          "Bug reports",
+          "Performance metrics"
+        ]
+      }
+    },
+    "tools": {
+      "development": [
+        "VSCode",
+        "Git",
+        "Docker",
+        "Railway"
+      ],
+      "ai": [
+        "OpenAI API",
+        "Claude API",
+        "Gemini API",
+        "Perplexity API"
+      ],
+      "monitoring": [
+        "LibreChat Swarm UI",
+        "MetaGPT Dashboard",
+        "Railway Metrics"
+      ]
+    }
+  }
+}
