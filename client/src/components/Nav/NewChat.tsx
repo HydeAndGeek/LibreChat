@@ -88,6 +88,7 @@ export default function NewChat({
           href="/"
           tabIndex={0}
           data-testid="nav-new-chat"
+          data-tutorial="new-chat"
           onClick={clickHandler}
           className={cn(
             'group flex h-10 items-center gap-2 rounded-lg px-2 font-medium transition-colors duration-200 hover:bg-surface-hover',

@@ -1,0 +1,3 @@
+[submodule "prompts/product-manager-prompts"]
+	path = prompts/product-manager-prompts
+	url = https://github.com/HydeAndGeek/product-manager-prompts.git
