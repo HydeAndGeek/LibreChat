@@ -19,13 +19,27 @@ const initializeSwarm = async (swarmData) => {
       { role: 'QAEngineer', status: 'idle' }
     ];
 
+    // Map roles to their prompt categories
+    const roleCategories = {
+      ProductManager: 'Product Management',
+      Architect: 'Architecture',
+      Engineer: 'Development',
+      QAEngineer: 'Testing'
+    };
+
     // Load relevant prompts for each agent
     for (const agent of baseAgents) {
-      const rolePrompts = await PromptGroup.find({
-        category: 'Product Management',
-        name: { $regex: new RegExp(agent.role, 'i') }
-      }).select('_id');
-      agent.prompts = rolePrompts.map(p => p._id);
+      try {
+        const rolePrompts = await PromptGroup.find({
+          category: roleCategories[agent.role] || agent.role,
+          name: { $regex: new RegExp(agent.role, 'i') }
+        }).select('_id');
+
+        agent.prompts = rolePrompts.map(p => p._id);
+      } catch (error) {
+        logger.warn(`Failed to load prompts for ${agent.role}:`, error);
+        agent.prompts = []; // Continue with empty prompts rather than failing
+      }
     }
 
     const swarm = new Swarm({

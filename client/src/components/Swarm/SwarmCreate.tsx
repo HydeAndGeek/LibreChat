@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Input, Textarea } from '~/components/ui';
+import { useAuthContext } from '~/hooks/AuthContext';
 
 interface SwarmCreateProps {
   onCreated: () => void;
@@ -7,6 +8,7 @@ interface SwarmCreateProps {
 }
 
 export default function SwarmCreate({ onCreated, onCancel }: SwarmCreateProps) {
+  const { token } = useAuthContext();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -48,7 +50,8 @@ export default function SwarmCreate({ onCreated, onCancel }: SwarmCreateProps) {
       const response = await fetch('/api/swarm', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       });

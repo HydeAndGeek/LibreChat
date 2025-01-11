@@ -30,7 +30,7 @@ export default function SwarmPanel() {
   const [swarms, setSwarms] = useState<TSwarm[]>([]);
   const [selectedSwarm, setSelectedSwarm] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, token } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export default function SwarmPanel() {
       const response = await fetch('/api/swarm', {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
       if (!response.ok) throw new Error('Failed to fetch swarms');

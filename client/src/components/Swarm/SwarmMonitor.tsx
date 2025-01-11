@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '~/components/ui';
 import AgentCard from '~/components/Swarm/AgentCard';
+import { useAuthContext } from '~/hooks/AuthContext';
 
 interface SwarmMonitorProps {
   swarmId: string;
@@ -40,11 +41,16 @@ export default function SwarmMonitor({ swarmId, onBack }: SwarmMonitorProps) {
   const [swarmStatus, setSwarmStatus] = useState<SwarmStatus | null>(null);
   const [error, setError] = useState('');
   const [isStarting, setIsStarting] = useState(false);
+  const { token } = useAuthContext();
 
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch(`/api/swarm/${swarmId}/status`);
+        const response = await fetch(`/api/swarm/${swarmId}/status`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (!response.ok) throw new Error('Failed to fetch swarm status');
         const data = await response.json();
         setSwarmStatus(data);
@@ -69,7 +75,8 @@ export default function SwarmMonitor({ swarmId, onBack }: SwarmMonitorProps) {
       const response = await fetch(`/api/swarm/${swarmId}/start`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -79,7 +86,11 @@ export default function SwarmMonitor({ swarmId, onBack }: SwarmMonitorProps) {
       }
 
       // Refresh status immediately after starting
-      const statusResponse = await fetch(`/api/swarm/${swarmId}/status`);
+      const statusResponse = await fetch(`/api/swarm/${swarmId}/status`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (statusResponse.ok) {
         const data = await statusResponse.json();
         setSwarmStatus(data);
