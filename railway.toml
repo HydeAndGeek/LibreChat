@@ -5,10 +5,10 @@ dockerfilePath = "Dockerfile"
 [deploy]
 startCommand = "npm run backend"
 healthcheckPath = "/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 60
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
 
 [service]
 name = "LibreChat"
-internal_port = 3090
+internal_port = 3080

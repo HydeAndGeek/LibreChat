@@ -2,6 +2,7 @@ require('dotenv').config();
 const path = require('path');
 require('module-alias')({ base: path.resolve(__dirname, '..') });
 const cors = require('cors');
+const mongoose = require('mongoose');
 const axios = require('axios');
 const express = require('express');
 const compression = require('compression');
@@ -31,9 +32,20 @@ const startServer = async () => {
   if (typeof Bun !== 'undefined') {
     axios.defaults.headers.common['Accept-Encoding'] = 'gzip';
   }
-  await connectDb();
-  logger.info('Connected to MongoDB');
-  await indexSync();
+
+  // Ensure database is connected before proceeding
+  let dbConnection;
+  try {
+    dbConnection = await connectDb();
+    if (dbConnection.readyState !== 1) {
+      throw new Error('Database connection not ready');
+    }
+    logger.info('Connected to MongoDB');
+    await indexSync();
+  } catch (error) {
+    logger.error('Failed to connect to database:', error);
+    process.exit(1);
+  }
 
   const app = express();
   app.disable('x-powered-by');
@@ -42,11 +54,29 @@ const startServer = async () => {
   const indexPath = path.join(app.locals.paths.dist, 'index.html');
   const indexHTML = fs.readFileSync(indexPath, 'utf8');
 
-  app.get('/health', (_req, res) => res.status(200).send('OK'));
-
   /* Middleware */
   app.use(noIndex);
   app.use(errorController);
+
+  /* Health Check */
+  app.get('/health', async (_req, res) => {
+    try {
+      const db = mongoose.connection;
+      const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+      const state = states[db.readyState] || 'unknown';
+
+      if (db.readyState === 1) {
+        logger.info('Health check passed - Database connected');
+        res.status(200).send('OK');
+      } else {
+        logger.warn(`Health check failed - Database state: ${state}`);
+        res.status(503).send(`Database connection not ready (state: ${state})`);
+      }
+    } catch (error) {
+      logger.error('Health check error:', error);
+      res.status(500).send('Health check failed: ' + error.message);
+    }
+  });
   app.use(express.json({ limit: '3mb' }));
   app.use(mongoSanitize());
   app.use(express.urlencoded({ extended: true, limit: '3mb' }));
