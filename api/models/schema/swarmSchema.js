@@ -20,22 +20,10 @@ const swarmAgentSchema = new Schema({
     type: String,
     required: true,
     enum: [
-      // Executive
-      'CEO', 'CTO', 'COO',
-      // Research
-      'ResearchLead', 'DataScientist',
-      // Data Collection
-      'WebScrapingEngineer', 'DataProcessingEngineer',
-      // Development
-      'FrontendEngineer', 'BackendEngineer', 'DevOpsEngineer',
-      // Project Management
-      'ScrumMaster', 'ProductManager',
-      // Content
-      'ContentStrategist', 'ContentCreator',
-      // Marketing
-      'SocialMediaManager', 'PRManager',
-      // Legal
-      'LegalCounsel', 'IPLawyer'
+      'ProductManager',
+      'Architect',
+      'Engineer',
+      'QAEngineer'
     ]
   },
   status: {
@@ -68,10 +56,80 @@ swarmAgentSchema.methods.executeFunction = async function(functionName, params) 
   const fn = this.functions.find(f => f.name === functionName);
   if (!fn) throw new Error(`Function ${functionName} not found`);
 
-  // Function execution logic here
-  // You can implement different strategies based on function name
+  try {
+    // Validate required parameters
+    fn.parameters.forEach(param => {
+      if (param.required && !(param.name in params)) {
+        throw new Error(`Required parameter ${param.name} missing`);
+      }
+    });
 
-  return result;
+    // Execute function based on role and function name
+    switch(this.role) {
+      case 'ProductManager':
+        return await this.executePMFunction(fn, params);
+      case 'Architect':
+        return await this.executeArchitectFunction(fn, params);
+      case 'Engineer':
+        return await this.executeEngineerFunction(fn, params);
+      case 'QAEngineer':
+        return await this.executeQAFunction(fn, params);
+      default:
+        throw new Error(`Unknown role ${this.role}`);
+    }
+  } catch (error) {
+    this.status = 'error';
+    throw error;
+  }
+};
+
+// Role-specific function execution
+swarmAgentSchema.methods.executePMFunction = async function(fn, params) {
+  switch(fn.name) {
+    case 'createPRD':
+      return {
+        type: 'prd',
+        content: params.requirements
+      };
+    default:
+      throw new Error(`Unknown PM function ${fn.name}`);
+  }
+};
+
+swarmAgentSchema.methods.executeArchitectFunction = async function(fn, params) {
+  switch(fn.name) {
+    case 'createDesign':
+      return {
+        type: 'design',
+        content: params.requirements
+      };
+    default:
+      throw new Error(`Unknown Architect function ${fn.name}`);
+  }
+};
+
+swarmAgentSchema.methods.executeEngineerFunction = async function(fn, params) {
+  switch(fn.name) {
+    case 'implement':
+      return {
+        type: 'implementation',
+        content: params.design
+      };
+    default:
+      throw new Error(`Unknown Engineer function ${fn.name}`);
+  }
+};
+
+swarmAgentSchema.methods.executeQAFunction = async function(fn, params) {
+  switch(fn.name) {
+    case 'test':
+      return {
+        type: 'testReport',
+        content: params.implementation
+      };
+    default:
+      throw new Error(`Unknown QA function ${fn.name}`);
+  }
 };
 
 // Add method for agent collaboration

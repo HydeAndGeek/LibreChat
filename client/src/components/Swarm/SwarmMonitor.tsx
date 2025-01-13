@@ -44,63 +44,115 @@ export default function SwarmMonitor({ swarmId, onBack }: SwarmMonitorProps) {
   const { token } = useAuthContext();
 
   useEffect(() => {
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+    let statusInterval: NodeJS.Timeout;
+
     const fetchStatus = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       try {
         const response = await fetch(`/api/swarm/${swarmId}/status`, {
           headers: {
             'Authorization': `Bearer ${token}`
-          }
+          },
+          signal: controller.signal
         });
-        if (!response.ok) throw new Error('Failed to fetch swarm status');
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.message || `Failed to fetch swarm status (${response.status})`);
+        }
+
         const data = await response.json();
         setSwarmStatus(data);
+        setError(''); // Clear any previous errors
+        retryCount = 0; // Reset retry count on success
       } catch (error) {
         if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError('Failed to fetch swarm status');
+          const errorMessage = error.name === 'AbortError'
+            ? 'Status request timed out'
+            : error.message;
+
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.warn(`Retrying status fetch (${retryCount}/${maxRetries})`);
+            setTimeout(fetchStatus, retryDelay);
+          } else {
+            setError(`Error: ${errorMessage}`);
+          }
         }
       }
     };
 
     fetchStatus();
-    const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
+    statusInterval = setInterval(fetchStatus, 5000);
 
-    return () => clearInterval(interval);
-  }, [swarmId]);
+    return () => {
+      clearInterval(statusInterval);
+    };
+  }, [swarmId, token]);
 
   const handleStartSwarm = async () => {
     setIsStarting(true);
+    setError('');
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
     try {
       const response = await fetch(`/api/swarm/${swarmId}/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to start swarm');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || `Failed to start swarm (${response.status})`);
       }
 
       // Refresh status immediately after starting
-      const statusResponse = await fetch(`/api/swarm/${swarmId}/status`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const statusController = new AbortController();
+      const statusTimeoutId = setTimeout(() => statusController.abort(), 10000);
+
+      try {
+        const statusResponse = await fetch(`/api/swarm/${swarmId}/status`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          signal: statusController.signal
+        });
+
+        clearTimeout(statusTimeoutId);
+
+        if (statusResponse.ok) {
+          const data = await statusResponse.json();
+          setSwarmStatus(data);
         }
-      });
-      if (statusResponse.ok) {
-        const data = await statusResponse.json();
-        setSwarmStatus(data);
+      } catch (statusError) {
+        console.warn('Failed to fetch initial status after start:', statusError);
+        // Don't show this error to user since the polling will retry
       }
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
+        setError(error.name === 'AbortError'
+          ? 'Start request timed out. The swarm may still be starting.'
+          : `Error: ${error.message}`
+        );
       } else {
-        setError('Failed to start swarm');
+        setError('An unexpected error occurred while starting the swarm');
       }
+      console.error('Start swarm error:', error);
     } finally {
       setIsStarting(false);
     }
@@ -108,8 +160,23 @@ export default function SwarmMonitor({ swarmId, onBack }: SwarmMonitorProps) {
 
   if (!swarmStatus) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-full space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="text-sm text-gray-500">
+          {error ? (
+            <div className="text-red-500 text-center">
+              {error}
+              <button
+                onClick={() => window.location.reload()}
+                className="block mt-2 text-blue-500 hover:text-blue-600"
+              >
+                Reload Page
+              </button>
+            </div>
+          ) : (
+            'Loading swarm status...'
+          )}
+        </div>
       </div>
     );
   }

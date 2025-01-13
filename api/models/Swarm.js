@@ -11,14 +11,6 @@ const initializeSwarm = async (swarmData) => {
   try {
     const { name, description, owner, project } = swarmData;
 
-    // Create base agents for the swarm
-    const baseAgents = [
-      { role: 'ProductManager', status: 'idle' },
-      { role: 'Architect', status: 'idle' },
-      { role: 'Engineer', status: 'idle' },
-      { role: 'QAEngineer', status: 'idle' }
-    ];
-
     // Map roles to their prompt categories
     const roleCategories = {
       ProductManager: 'Product Management',
@@ -27,54 +19,138 @@ const initializeSwarm = async (swarmData) => {
       QAEngineer: 'Testing'
     };
 
-    // Create default prompt groups for each agent if they don't exist
-    for (const agent of baseAgents) {
-      try {
-        const defaultPrompt = await Prompt.findOneAndUpdate(
-          {
-            type: 'text',
-            prompt: `Default prompt for ${agent.role}`,
-          },
-          {
-            type: 'text',
-            prompt: `Default prompt for ${agent.role}`,
-            author: owner,
-          },
-          { upsert: true, new: true }
-        );
-
-        const promptGroup = await PromptGroup.findOneAndUpdate(
-          {
-            category: roleCategories[agent.role] || agent.role,
-            name: `${agent.role} Default`,
-          },
-          {
-            category: roleCategories[agent.role] || agent.role,
-            name: `${agent.role} Default`,
-            author: owner,
-            authorName: 'System',
-            productionId: defaultPrompt._id,
-          },
-          { upsert: true, new: true }
-        );
-
-        agent.prompts = [promptGroup._id];
-      } catch (error) {
-        logger.warn(`Failed to create prompts for ${agent.role}:`, error);
-        agent.prompts = []; // Continue with empty prompts rather than failing
+    // Base agent configurations
+    const baseAgents = [
+      {
+        role: 'ProductManager',
+        status: 'idle',
+        functions: [{
+          name: 'createPRD',
+          parameters: [{
+            name: 'requirements',
+            type: 'string',
+            required: true
+          }],
+          description: 'Create Product Requirements Document'
+        }]
+      },
+      {
+        role: 'Architect',
+        status: 'idle',
+        functions: [{
+          name: 'createDesign',
+          parameters: [{
+            name: 'requirements',
+            type: 'string',
+            required: true
+          }],
+          description: 'Create System Design Document'
+        }]
+      },
+      {
+        role: 'Engineer',
+        status: 'idle',
+        functions: [{
+          name: 'implement',
+          parameters: [{
+            name: 'design',
+            type: 'object',
+            required: true
+          }],
+          description: 'Implement System Design'
+        }]
+      },
+      {
+        role: 'QAEngineer',
+        status: 'idle',
+        functions: [{
+          name: 'test',
+          parameters: [{
+            name: 'implementation',
+            type: 'object',
+            required: true
+          }],
+          description: 'Test Implementation'
+        }]
       }
-    }
+    ];
 
+    // Initialize all agents concurrently with proper error handling
+    const initializedAgents = await Promise.all(
+      baseAgents.map(async (agent) => {
+        try {
+          // Create prompt and prompt group concurrently
+          const [defaultPrompt, promptGroup] = await Promise.all([
+            Prompt.findOneAndUpdate(
+              {
+                type: 'text',
+                prompt: `Default prompt for ${agent.role}`,
+              },
+              {
+                type: 'text',
+                prompt: `Default prompt for ${agent.role}`,
+                author: owner,
+              },
+              {
+                upsert: true,
+                new: true,
+                maxTimeMS: 5000
+              }
+            ),
+            PromptGroup.findOneAndUpdate(
+              {
+                category: roleCategories[agent.role] || agent.role,
+                name: `${agent.role} Default`,
+              },
+              {
+                category: roleCategories[agent.role] || agent.role,
+                name: `${agent.role} Default`,
+                author: owner,
+                authorName: 'System'
+              },
+              {
+                upsert: true,
+                new: true,
+                maxTimeMS: 5000
+              }
+            )
+          ]);
+
+          // Link prompt to group
+          promptGroup.productionId = defaultPrompt._id;
+          await promptGroup.save({ maxTimeMS: 5000 });
+
+          return {
+            ...agent,
+            prompts: [promptGroup._id]
+          };
+        } catch (error) {
+          logger.warn(`Failed to create prompts for ${agent.role}:`, error);
+          // Return agent with empty prompts rather than failing
+          return {
+            ...agent,
+            prompts: []
+          };
+        }
+      })
+    );
+
+    // Create and save swarm with timeout
     const swarm = new Swarm({
       name,
       description,
       owner,
       project,
-      agents: baseAgents,
-      status: 'initializing'
+      agents: initializedAgents,
+      status: 'initializing',
+      logs: [{
+        level: 'info',
+        message: 'Swarm initialized with agents',
+        timestamp: new Date()
+      }]
     });
 
-    await swarm.save();
+    await swarm.save({ maxTimeMS: 5000 });
     return swarm;
   } catch (error) {
     logger.error('Error initializing swarm:', error);
