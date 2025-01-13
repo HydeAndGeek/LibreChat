@@ -1,5 +1,5 @@
 const { Swarm } = require('./schema/swarmSchema');
-const { PromptGroup } = require('./schema/promptSchema');
+const { PromptGroup, Prompt } = require('./schema/promptSchema');
 const { logger } = require('~/config');
 
 /**
@@ -27,17 +27,40 @@ const initializeSwarm = async (swarmData) => {
       QAEngineer: 'Testing'
     };
 
-    // Load relevant prompts for each agent
+    // Create default prompt groups for each agent if they don't exist
     for (const agent of baseAgents) {
       try {
-        const rolePrompts = await PromptGroup.find({
-          category: roleCategories[agent.role] || agent.role,
-          name: { $regex: new RegExp(agent.role, 'i') }
-        }).select('_id');
+        const defaultPrompt = await Prompt.findOneAndUpdate(
+          {
+            type: 'text',
+            prompt: `Default prompt for ${agent.role}`,
+          },
+          {
+            type: 'text',
+            prompt: `Default prompt for ${agent.role}`,
+            author: owner,
+          },
+          { upsert: true, new: true }
+        );
 
-        agent.prompts = rolePrompts.map(p => p._id);
+        const promptGroup = await PromptGroup.findOneAndUpdate(
+          {
+            category: roleCategories[agent.role] || agent.role,
+            name: `${agent.role} Default`,
+          },
+          {
+            category: roleCategories[agent.role] || agent.role,
+            name: `${agent.role} Default`,
+            author: owner,
+            authorName: 'System',
+            productionId: defaultPrompt._id,
+          },
+          { upsert: true, new: true }
+        );
+
+        agent.prompts = [promptGroup._id];
       } catch (error) {
-        logger.warn(`Failed to load prompts for ${agent.role}:`, error);
+        logger.warn(`Failed to create prompts for ${agent.role}:`, error);
         agent.prompts = []; // Continue with empty prompts rather than failing
       }
     }

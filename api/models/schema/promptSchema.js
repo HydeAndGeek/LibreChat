@@ -1,118 +1,156 @@
 const mongoose = require('mongoose');
-const { Constants } = require('librechat-data-provider');
 const Schema = mongoose.Schema;
 
-/**
- * @typedef {Object} MongoPromptGroup
- * @property {ObjectId} [_id] - MongoDB Document ID
- * @property {string} name - The name of the prompt group
- * @property {ObjectId} author - The author of the prompt group
- * @property {ObjectId} [projectId=null] - The project ID of the prompt group
- * @property {ObjectId} [productionId=null] - The project ID of the prompt group
- * @property {string} authorName - The name of the author of the prompt group
- * @property {number} [numberOfGenerations=0] - Number of generations the prompt group has
- * @property {string} [oneliner=''] - Oneliner description of the prompt group
- * @property {string} [category=''] - Category of the prompt group
- * @property {string} [command] - Command for the prompt group
- * @property {Date} [createdAt] - Date when the prompt group was created (added by timestamps)
- * @property {Date} [updatedAt] - Date when the prompt group was last updated (added by timestamps)
- */
+const promptSchema = new Schema({
+  text: {
+    type: String,
+    required: true
+  },
+  functions: [String],
+  type: {
+    type: String,
+    enum: ['text', 'code', 'data'],
+    default: 'text'
+  },
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }
+}, { timestamps: true });
 
-const promptGroupSchema = new Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    numberOfGenerations: {
-      type: Number,
-      default: 0,
-    },
-    oneliner: {
-      type: String,
-      default: '',
-    },
-    category: {
-      type: String,
-      default: '',
-      index: true,
-    },
-    projectIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'Project',
-      index: true,
-    },
-    productionId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Prompt',
-      required: true,
-      index: true,
-    },
-    author: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
-    authorName: {
-      type: String,
-      required: true,
-    },
-    command: {
-      type: String,
-      index: true,
-      validate: {
-        validator: function (v) {
-          return v === undefined || v === null || v === '' || /^[a-z0-9-]+$/.test(v);
+const promptGroupSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    index: true
+  },
+  category: {
+    type: String,
+    required: true,
+    index: true
+  },
+  prompts: [{
+    text: String,
+    functions: [String]
+  }],
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  authorName: String,
+  productionId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Prompt'
+  }
+}, { timestamps: true });
+
+// Initialize default prompt groups
+promptGroupSchema.statics.initializeDefaultGroups = async function(userId) {
+  const defaultGroups = [
+    // Executive Team
+    {
+      name: "CEO Prompts",
+      category: "Executive",
+      prompts: [
+        {
+          text: "Create company vision and strategy",
+          functions: ["defineVision", "createStrategy", "setGoals"]
         },
-        message: (props) =>
-          `${props.value} is not a valid command. Only lowercase alphanumeric characters and highfins (') are allowed.`,
-      },
-      maxlength: [
-        Constants.COMMANDS_MAX_LENGTH,
-        `Command cannot be longer than ${Constants.COMMANDS_MAX_LENGTH} characters`,
-      ],
+        {
+          text: "Analyze market opportunities and threats",
+          functions: ["marketAnalysis", "competitorAnalysis"]
+        }
+      ]
     },
-  },
-  {
-    timestamps: true,
-  },
-);
+    {
+      name: "CTO Prompts",
+      category: "Executive",
+      prompts: [
+        {
+          text: "Define technical roadmap and architecture",
+          functions: ["createTechRoadmap", "architectureReview"]
+        },
+        {
+          text: "Evaluate new technologies and innovations",
+          functions: ["techEvaluation", "innovationAssessment"]
+        }
+      ]
+    },
+    // Research Team
+    {
+      name: "Research Lead Prompts",
+      category: "Research",
+      prompts: [
+        {
+          text: "Design research methodology and experiments",
+          functions: ["researchDesign", "experimentPlanning"]
+        },
+        {
+          text: "Analyze research findings and create reports",
+          functions: ["dataAnalysis", "reportGeneration"]
+        }
+      ]
+    },
+    // Development Team
+    {
+      name: "Frontend Engineer Prompts",
+      category: "Development",
+      prompts: [
+        {
+          text: "Develop user interfaces and components",
+          functions: ["uiDevelopment", "componentCreation"]
+        },
+        {
+          text: "Implement user interactions and animations",
+          functions: ["interactionDesign", "animationDevelopment"]
+        }
+      ]
+    },
+    {
+      name: "Backend Engineer Prompts",
+      category: "Development",
+      prompts: [
+        {
+          text: "Design and implement APIs",
+          functions: ["apiDevelopment", "serviceIntegration"]
+        },
+        {
+          text: "Optimize database performance",
+          functions: ["dbOptimization", "queryTuning"]
+        }
+      ]
+    },
+    // Project Management
+    {
+      name: "Scrum Master Prompts",
+      category: "Project Management",
+      prompts: [
+        {
+          text: "Facilitate agile ceremonies",
+          functions: ["sprintPlanning", "retrospectiveFacilitation"]
+        },
+        {
+          text: "Remove team impediments",
+          functions: ["impedimentResolution", "processImprovement"]
+        }
+      ]
+    }
+  ];
+
+  for (const group of defaultGroups) {
+    await this.findOneAndUpdate(
+      { name: group.name },
+      {
+        ...group,
+        author: userId,
+        authorName: 'System'
+      },
+      { upsert: true, new: true }
+    );
+  }
+};
 
 const PromptGroup = mongoose.model('PromptGroup', promptGroupSchema);
-
-const promptSchema = new Schema(
-  {
-    groupId: {
-      type: Schema.Types.ObjectId,
-      ref: 'PromptGroup',
-      required: true,
-      index: true,
-    },
-    author: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    prompt: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      enum: ['text', 'chat'],
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-  },
-);
-
 const Prompt = mongoose.model('Prompt', promptSchema);
 
-promptSchema.index({ createdAt: 1, updatedAt: 1 });
-promptGroupSchema.index({ createdAt: 1, updatedAt: 1 });
-
-module.exports = { Prompt, PromptGroup };
+module.exports = { PromptGroup, Prompt };
