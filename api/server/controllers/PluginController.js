@@ -109,11 +109,12 @@ const getAvailableTools = async (req, res) => {
     const pluginManifest = await fs.readFile(req.app.locals.paths.pluginManifest, 'utf8');
 
     const jsonData = JSON.parse(pluginManifest);
-    const customConfig = await getCustomConfig();
-    if (customConfig?.mcpServers != null) {
-      const mcpManager = await getMCPManager();
-      await mcpManager.loadManifestTools(jsonData);
-    }
+    // Temporarily disable MCP functionality
+    // const customConfig = await getCustomConfig();
+    // if (customConfig?.mcpServers != null) {
+    //   const mcpManager = await getMCPManager();
+    //   await mcpManager.loadManifestTools(jsonData);
+    // }
 
     /** @type {TPlugin[]} */
     const uniquePlugins = filterUniquePlugins(jsonData);

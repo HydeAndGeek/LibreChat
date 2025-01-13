@@ -6,7 +6,6 @@ const promptSchema = new Schema({
     type: String,
     required: true
   },
-  functions: [String],
   type: {
     type: String,
     enum: ['text', 'code', 'data'],
@@ -31,7 +30,7 @@ const promptGroupSchema = new Schema({
   },
   prompts: [{
     text: String,
-    functions: [String]
+    prompt: String
   }],
   author: {
     type: Schema.Types.ObjectId,
@@ -47,91 +46,51 @@ const promptGroupSchema = new Schema({
 // Initialize default prompt groups
 promptGroupSchema.statics.initializeDefaultGroups = async function(userId) {
   const defaultGroups = [
-    // Executive Team
     {
-      name: "CEO Prompts",
-      category: "Executive",
+      name: "Product Manager Prompts",
+      category: "Product Management",
       prompts: [
         {
-          text: "Create company vision and strategy",
-          functions: ["defineVision", "createStrategy", "setGoals"]
+          text: "Create a detailed product requirements document (PRD) that outlines the project goals, features, and success criteria."
         },
         {
-          text: "Analyze market opportunities and threats",
-          functions: ["marketAnalysis", "competitorAnalysis"]
+          text: "Review and prioritize features based on user needs and technical constraints."
         }
       ]
     },
     {
-      name: "CTO Prompts",
-      category: "Executive",
+      name: "Architect Prompts",
+      category: "Architecture",
       prompts: [
         {
-          text: "Define technical roadmap and architecture",
-          functions: ["createTechRoadmap", "architectureReview"]
+          text: "Design a scalable and maintainable system architecture that meets the project requirements."
         },
         {
-          text: "Evaluate new technologies and innovations",
-          functions: ["techEvaluation", "innovationAssessment"]
+          text: "Evaluate and select appropriate technologies and frameworks for the project."
         }
       ]
     },
-    // Research Team
     {
-      name: "Research Lead Prompts",
-      category: "Research",
-      prompts: [
-        {
-          text: "Design research methodology and experiments",
-          functions: ["researchDesign", "experimentPlanning"]
-        },
-        {
-          text: "Analyze research findings and create reports",
-          functions: ["dataAnalysis", "reportGeneration"]
-        }
-      ]
-    },
-    // Development Team
-    {
-      name: "Frontend Engineer Prompts",
+      name: "Engineer Prompts",
       category: "Development",
       prompts: [
         {
-          text: "Develop user interfaces and components",
-          functions: ["uiDevelopment", "componentCreation"]
+          text: "Implement features according to the technical specifications and best practices."
         },
         {
-          text: "Implement user interactions and animations",
-          functions: ["interactionDesign", "animationDevelopment"]
+          text: "Write clean, efficient, and well-documented code."
         }
       ]
     },
     {
-      name: "Backend Engineer Prompts",
-      category: "Development",
+      name: "QA Engineer Prompts",
+      category: "Testing",
       prompts: [
         {
-          text: "Design and implement APIs",
-          functions: ["apiDevelopment", "serviceIntegration"]
+          text: "Create and execute comprehensive test plans to ensure code quality."
         },
         {
-          text: "Optimize database performance",
-          functions: ["dbOptimization", "queryTuning"]
-        }
-      ]
-    },
-    // Project Management
-    {
-      name: "Scrum Master Prompts",
-      category: "Project Management",
-      prompts: [
-        {
-          text: "Facilitate agile ceremonies",
-          functions: ["sprintPlanning", "retrospectiveFacilitation"]
-        },
-        {
-          text: "Remove team impediments",
-          functions: ["impedimentResolution", "processImprovement"]
+          text: "Identify and document bugs, and verify bug fixes."
         }
       ]
     }

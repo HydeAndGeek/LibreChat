@@ -29,17 +29,8 @@ async function createMCPTool({ req, toolKey, provider }) {
   const [toolName, serverName] = toolKey.split(Constants.mcp_delimiter);
   /** @type {(toolInput: Object | string) => Promise<unknown>} */
   const _call = async (toolInput) => {
-    try {
-      const mcpManager = await getMCPManager();
-      const result = await mcpManager.callTool(serverName, toolName, provider, toolInput);
-      if (isAssistantsEndpoint(provider) && Array.isArray(result)) {
-        return result[0];
-      }
-      return result;
-    } catch (error) {
-      logger.error(`${toolName} MCP server tool call failed`, error);
-      return `${toolName} MCP server tool call failed.`;
-    }
+    logger.warn('MCP functionality is temporarily disabled');
+    return `${toolName} MCP server tool call is temporarily disabled.`;
   };
 
   const toolInstance = tool(_call, {

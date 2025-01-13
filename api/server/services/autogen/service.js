@@ -1,8 +1,11 @@
-const { use_mcp_tool } = require('@modelcontextprotocol/sdk/client');
+const OpenAI = require('openai');
 
 class AutoGenService {
   constructor() {
     this.agents = new Map();
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
   }
 
   async createAgent(config) {
@@ -12,19 +15,26 @@ class AutoGenService {
       name,
       role,
       systemMessage,
+      openai: this.openai,
       async sendMessage(messages) {
-        const response = await use_mcp_tool('claude', 'chat', {
-          messages: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          })),
-          context: {
-            systemMessage: this.systemMessage,
+        try {
+          const response = await this.openai.chat.completions.create({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: this.systemMessage },
+              ...messages.map(msg => ({
+                role: msg.role,
+                content: msg.content
+              }))
+            ],
             temperature: 0.7,
-            maxTokens: 2000
-          }
-        });
-        return response.content;
+            max_tokens: 2000
+          });
+          return response.choices[0].message.content;
+        } catch (error) {
+          console.error('AutoGen message error:', error);
+          throw new Error('Failed to process message: ' + error.message);
+        }
       }
     };
 

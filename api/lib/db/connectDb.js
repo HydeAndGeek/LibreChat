@@ -24,19 +24,27 @@ async function connectDb() {
 
   const disconnected = cached.conn && cached.conn?._readyState !== 1;
   if (!cached.promise || disconnected) {
-    const opts = {
-      bufferCommands: false,
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
-      // bufferMaxEntries: 0,
-      // useFindAndModify: true,
-      // useCreateIndex: true
-    };
+  const opts = {
+    bufferCommands: false,
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    heartbeatFrequencyMS: 30000,
+    retryWrites: true,
+    retryReads: true
+  };
 
     mongoose.set('strictQuery', true);
-    cached.promise = mongoose.connect(MONGO_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(MONGO_URI, opts)
+      .then((mongoose) => {
+        console.log('MongoDB connected successfully');
+        return mongoose;
+      })
+      .catch((error) => {
+        console.error('MongoDB connection error:', error);
+        throw error;
+      });
   }
   cached.conn = await cached.promise;
   return cached.conn;

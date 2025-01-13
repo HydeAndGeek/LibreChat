@@ -45,11 +45,12 @@ const AppService = async (app) => {
     directory: paths.structuredTools,
   });
 
-  if (config.mcpServers != null) {
-    const mcpManager = await getMCPManager();
-    await mcpManager.initializeMCP(config.mcpServers);
-    await mcpManager.mapAvailableTools(availableTools);
-  }
+  // Temporarily disable MCP initialization
+  // if (config.mcpServers != null) {
+  //   const mcpManager = await getMCPManager();
+  //   await mcpManager.initializeMCP(config.mcpServers);
+  //   await mcpManager.mapAvailableTools(availableTools);
+  // }
 
   const socialLogins =
     config?.registration?.socialLogins ?? configDefaults?.registration?.socialLogins;

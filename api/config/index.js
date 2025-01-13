@@ -10,8 +10,21 @@ let mcpManager = null;
  */
 async function getMCPManager() {
   if (!mcpManager) {
-    const { MCPManager } = await import('librechat-mcp');
-    mcpManager = MCPManager.getInstance(logger);
+    try {
+      let MCPManager;
+      try {
+        MCPManager = (await import('librechat-mcp')).MCPManager;
+      } catch {
+        MCPManager = require('librechat-mcp').MCPManager;
+      }
+      mcpManager = MCPManager.getInstance(logger);
+    } catch (error) {
+      logger.warn('MCP functionality disabled: librechat-mcp package not available');
+      mcpManager = {
+        initializeMCP: () => {},
+        mapAvailableTools: () => {}
+      };
+    }
   }
   return mcpManager;
 }

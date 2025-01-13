@@ -20,7 +20,10 @@ const configureSocialLogins = require('./socialLogins');
 const AppService = require('./services/AppService');
 const staticCache = require('./utils/staticCache');
 const noIndex = require('./middleware/noIndex');
-const routes = require('./routes');
+const routes = { ...require('./routes') };
+delete routes.autogen; // Temporarily disable autogen route
+delete routes.swarm; // Temporarily disable swarm route
+delete routes.agents; // Temporarily disable agents route
 
 const { PORT, HOST, ALLOW_SOCIAL_LOGIN, DISABLE_COMPRESSION } = process.env ?? {};
 
@@ -105,7 +108,6 @@ const startServer = async () => {
   app.use('/images/', validateImageRequest, routes.staticRoute);
   app.use('/api/share', routes.share);
   app.use('/api/roles', routes.roles);
-  app.use('/api/agents', routes.agents);
   app.use('/api/banner', routes.banner);
   app.use('/api/bedrock', routes.bedrock);
 
