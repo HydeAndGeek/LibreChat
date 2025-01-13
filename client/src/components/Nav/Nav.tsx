@@ -22,7 +22,6 @@ import { Spinner } from '~/components/svg';
 import SearchBar from './SearchBar';
 import NavToggle from './NavToggle';
 import NewChat from './NewChat';
-import SwarmNav from './SwarmNav';
 import PromptsNav from './PromptsNav';
 import { cn } from '~/utils';
 import store from '~/store';
@@ -186,8 +185,6 @@ const Nav = ({
                                 setTags={setTags}
                                 isSmallScreen={isSmallScreen}
                               />
-                              <div className="mt-1.5" />
-                              <SwarmNav isSmallScreen={isSmallScreen} />
                               <div className="mt-1.5" />
                               <PromptsNav />
                             </>
